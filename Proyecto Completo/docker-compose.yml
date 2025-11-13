@@ -1,0 +1,71 @@
+version: '3.8'
+services:
+  spark-notebook:
+    build:
+      context: .
+      dockerfile: spark-notebook.Dockerfile
+    image: proyecto4-spark-notebook:latest
+    container_name: spark-notebook
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=no
+      # Propaga credenciales y esquemas de Postgres desde .env al contenedor del notebook
+      - PG_HOST=${PG_HOST}
+      - PG_PORT=${PG_PORT}
+      - PG_DB=${PG_DB}
+      - PG_USER=${PG_USER}
+      - PG_PASSWORD=${PG_PASSWORD}
+      - PG_SCHEMA_RAW=${PG_SCHEMA_RAW}
+      - PG_SCHEMA_ANALYTICS=${PG_SCHEMA_ANALYTICS}
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${PG_DB}
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASSWORD}
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+  obt-builder:
+    build:
+      context: ./obt-builder
+      dockerfile: Dockerfile
+    container_name: obt-builder
+    environment:
+      - PG_HOST=${PG_HOST}
+      - PG_PORT=${PG_PORT}
+      - PG_DB=${PG_DB}
+      - PG_USER=${PG_USER}
+      - PG_PASSWORD=${PG_PASSWORD}
+      - PG_SCHEMA_RAW=${PG_SCHEMA_RAW}
+      - PG_SCHEMA_ANALYTICS=${PG_SCHEMA_ANALYTICS}
+      - YEARS=${YEARS}
+      - SERVICES=${SERVICES}
+      - RUN_ID=${RUN_ID}
+    volumes:
+      - ./obt-builder:/app
+    depends_on:
+      - postgres
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+networks:
+  default:
+    name: data-mining-net

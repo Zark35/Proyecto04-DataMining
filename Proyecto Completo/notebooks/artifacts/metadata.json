@@ -1,0 +1,40 @@
+{
+  "train_year": 2023,
+  "val_year": 2024,
+  "test_year": 2025,
+  "features_num": [
+    "trip_distance",
+    "passenger_count",
+    "pickup_hour",
+    "pickup_dow",
+    "month",
+    "year",
+    "is_weekend",
+    "is_peak_hour"
+  ],
+  "features_cat": [
+    "service_type",
+    "vendor_name",
+    "rate_code_desc",
+    "pu_borough",
+    "pu_zone"
+  ],
+  "poly_features": [
+    "trip_distance",
+    "pickup_hour"
+  ],
+  "poly_degree": 2,
+  "scaler": "RobustScaler",
+  "engineered_flags": [
+    "is_weekend",
+    "is_peak_hour"
+  ],
+  "trip_distance_cap_pct": 0.99,
+  "trip_distance_cap_value": 20.28,
+  "metrics_test": {
+    "RMSE": 41.28256548749551,
+    "MAE": 38.82696050292895,
+    "R2": -2.1022029401890507
+  },
+  "timestamp": "2025-11-13 01:35:46"
+}

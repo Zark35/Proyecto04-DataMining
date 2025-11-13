@@ -1,0 +1,6 @@
+{
+  "rmse_original": 41.28256548749551,
+  "rmse_log": 13.673065135976094,
+  "winner": "log-target",
+  "winner_rmse": 13.673065135976094
+}
