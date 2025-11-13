@@ -7,6 +7,8 @@ Este repo contiene la infraestructura y artefactos para:
 
 La entrega cumple con el documento `proyecto04.md` (requisitos, rúbrica y checklist).
 
+Nota importante (estructura): La infraestructura ejecutable y autocontenida está en la carpeta `Proyecto Completo/`. Ahí se encuentran `docker-compose.yml`, `notebooks/`, `obt-builder/` y `spark-notebook.Dockerfile`. Ejecuta todos los comandos desde esa carpeta.
+
 ## Variables de entorno
 
 Crear un archivo `.env` (usar como base `.env.example`) con:
@@ -35,9 +37,14 @@ Crear un archivo `.env` (usar como base `.env.example`) con:
 - La imagen se construye con `spark-notebook.Dockerfile` y monta `./notebooks` en `/home/jovyan/work`.
 - Incluye el driver JDBC de Postgres.
 
+3) Abrir y correr los notebooks:
+- Abre Jupyter en http://localhost:8888 (el token aparece en los logs del contenedor `spark-notebook`).
+- Notebook de ingesta: `notebooks/01_ingesta_parquet_raw.ipynb`.
+- Notebook de ML: `notebooks/ml_total_amount_regression.ipynb`.
+
 ## Ingesta RAW (Spark → Postgres)
 
-Notebook: `notebooks/01_ingesta_parquet_raw.ipynb`
+Notebook: `notebooks/01_ingesta_parquet_raw.ipynb` (dentro de `Proyecto Completo/`)
 - Descarga bajo demanda cada Parquet y evita staging masivo.
 - Escribe en `raw.yellow_taxi_trip`, `raw.green_taxi_trip` y `raw.taxi_zone_lookup`.
 - Metadatos por lote: `service_type`, `source_year`, `source_month`, `ingested_at_utc`.
@@ -48,9 +55,9 @@ Notas:
 
 ## Construcción de OBT (obt-builder)
 
-Servicio: `obt-builder` (carpeta `obt-builder/`). Entrypoint: `python build_obt.py`
+Servicio: `obt-builder` (carpeta `obt-builder/` dentro de `Proyecto Completo/`). Entrypoint: `python build_obt.py`
 
-- Comando de evaluación (recomendado por el profesor):
+- Comando de evaluación (recomendado por el profesor; ejecutar desde `Proyecto Completo/`):
   - `docker compose run --rm obt-builder --full-rebuild --run-id OBT_$(Get-Date -UFormat %Y%m%d_%H%M%S)`
   - Atajo `--full-rebuild` = modo `full`, años 2015–2025, `services=yellow,green`, `overwrite=true`, `months=1..12`.
 - Modo manual (by‑partition):
@@ -67,7 +74,7 @@ Características del script (`obt-builder/build_obt.py`):
 
 ## Modelado — ML (from‑scratch vs scikit‑learn)
 
-Notebook: `notebooks/ml_total_amount_regression.ipynb`
+Notebook: `notebooks/ml_total_amount_regression.ipynb` (dentro de `Proyecto Completo/`)
 - Target: `total_amount` (sin leakage; solo features disponibles en pickup)
 - Split temporal: Train (años viejos), Validación (intermedio), Test (reciente)
 - Preprocesamiento común: imputación, escalado, OHE y `PolynomialFeatures` (en 2–3 numéricas claves)
@@ -89,7 +96,7 @@ Nota: si re‑ejecutas el notebook y mejoras métricas, sustituye los JSON con l
 
 ## Comandos típicos (PowerShell)
 
-Estos comandos son orientativos; ya están documentados arriba, pero los dejamos aquí juntos:
+Estos comandos son orientativos; ya están documentados arriba, pero los dejamos aquí juntos. Asegurarse de estar en la carpeta `Proyecto Completo/` antes de ejecutarlos.
 
 - Levantar Postgres y pgAdmin (opcional):
   - `docker compose up -d postgres pgadmin`
@@ -100,6 +107,10 @@ Estos comandos son orientativos; ya están documentados arriba, pero los dejamos
   - `docker compose run --rm obt-builder --full-rebuild --run-id OBT_$(Get-Date -UFormat %Y%m%d_%H%M%S)`
 - Construcción OBT por partición:
   - `docker compose run --rm obt-builder --mode by-partition --year-start 2023 --year-end 2023 --months 1,2,3 --services yellow,green --run-id test_run --overwrite false`
+
+- Abrir Jupyter y correr los notebooks:
+  - `docker compose logs -f spark-notebook`  # para copiar el token
+  - Navega a: http://localhost:8888 y abre `notebooks/01_ingesta_parquet_raw.ipynb` y `notebooks/ml_total_amount_regression.ipynb`
 
 ## Checklist (auto)
 
